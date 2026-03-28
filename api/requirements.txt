@@ -1,3 +1,4 @@
+ipython>=8.18.1
 jsonpickle>=4.0.2
 orjson>=3.10.15
 tqdm>=4.67.1
