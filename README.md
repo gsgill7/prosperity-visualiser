@@ -1,73 +1,40 @@
 # Prosperity Visualizer
 
-**A tick-level L2 order book replay and analytics dashboard for the [IMC Prosperity](https://prosperity.imc.com/) algorithmic trading competition.**
+A tick-level L2 order book replay and analytics dashboard for the [IMC Prosperity](https://prosperity.imc.com/) algorithmic trading competition.
 
-Upload a backtest log → scrub through every tick → analyse market microstructure. Or paste your `Trader` class, click **Run Backtest**, and results load instantly in the browser — no local Python required.
+Upload a backtest log to scrub through every tick and analyse market microstructure. Alternatively, submit a `Trader` class directly in the browser — the server runs the backtest against real competition data and loads the results into the visualizer without any local Python setup.
 
----
-
-## Live Demo
-
-🚀 **[prosperity-visualizer.vercel.app](https://prosperity-visualizer.vercel.app)** — drag in `sample/demo.log` to try it immediately.
+**Live:** [prosperity-visualizer.vercel.app](https://prosperity-visualizer.vercel.app) — click **Use Demo Trader**, then **Run Backtest** to see all eight analysis tabs populated immediately.
 
 ---
 
-## Features
+## Analysis Tabs
 
-### 8 Analysis Tabs
-
-| Tab | What it shows |
-|-----|---------------|
-| **Time-Series** | Price + own trades + signal overlays (wall_mid, bid/ask walls, fair_value, EMA). Tick-scrubber replays the L2 order book snapshot at any timestamp. Multi-run PnL comparison overlay. |
-| **Flow Analysis** | NPC lot-size distribution — identifies which bots are active by their deterministic order sizes. |
-| **Seasonality** | Mid-price by intra-day timestamp split across multiple days — reveals recurring price patterns. |
-| **Volume Profile** | Price-volume histogram of your own fills — where you're getting size done. |
-| **Stochastic** | Hurst exponent (Rescaled Range, radix-2 FFT) classifies the instrument as mean-reverting, random, or trending. Dominant period annotation. |
-| **Microstructure** | Engine liquidity walls vs your execution prices. Edge vs Wall Mid per fill. Requires `SIG` logging. |
-| **Bot Patterns** | Maker/taker classification of NPC bots — equidistant simultaneous prints = market makers (■), directional = takers (▲▼). |
-| **Imbalance** | Order Book Imbalance (OBI), Wall Mid skew, tape velocity, Pearson correlation OBI → ΔPrice. |
-
-### In-Browser Backtester
-Upload a `Trader` class, select Round 0 days, click **Run Backtest** — the server runs your strategy against real competition data and streams the log back. Results load into the visualizer exactly like a manually uploaded file.
-
-### Log Formats Supported
-- Backtester `.log` (Sandbox logs / Activities log / Trade History)
-- IMC submission `.json` (lambda log array)
-- `.zip` archives of either
+| Tab | Description |
+|-----|-------------|
+| **Time-Series** | Candlestick price chart with own-trade overlays and signal annotations (fair value, EMA, bid/ask walls). Tick-scrubber replays the full L2 order book snapshot at any timestamp. Supports multi-run PnL comparison. |
+| **Flow Analysis** | NPC lot-size distribution. Identifies which market-making bots are active based on their deterministic order sizes. |
+| **Seasonality** | Mid-price by intra-day timestamp, split across multiple days. Surfaces recurring intra-day price patterns. |
+| **Volume Profile** | Price-volume histogram of own fills. Shows where execution is concentrated relative to the price distribution. |
+| **Stochastic** | Hurst exponent via Rescaled Range and radix-2 FFT. Classifies the instrument as mean-reverting (H < 0.5), random walk (H ≈ 0.5), or trending (H > 0.5), with dominant period annotation. |
+| **Microstructure** | Engine liquidity walls plotted against execution prices. Computes edge-vs-wall-mid per fill. Requires `SIG` signal logging (see below). |
+| **Bot Patterns** | Maker/taker classification of NPC bots. Equidistant simultaneous multi-lot prints are classified as market makers; directional single-lot prints as takers. |
+| **Imbalance** | Order Book Imbalance (OBI), wall-mid skew, tape velocity, and Pearson correlation between OBI and subsequent price change. |
 
 ---
 
-## Quick Start
+## In-Browser Backtest
 
-```bash
-# No installation needed — open directly
-open index.html
+The sidebar includes a one-click backtest runner. Clicking **Use Demo Trader** loads the bundled `demo_trader.py` market-making strategy, selects both Round 0 days, and enables PnL merging. Clicking **Run Backtest** sends the trader source to a Vercel Python serverless function (`api/backtest.py`), which:
 
-# Or start a local server (avoids ES-module CORS on file://)
-python -m http.server 8000
-```
+1. Writes the trader code to `/tmp` and imports the `Trader` class dynamically via `importlib`.
+2. Runs the backtester against bundled Round 0 market data CSVs using `FileSystemReader`.
+3. Merges multi-day results with timestamp offsetting and optional PnL continuity.
+4. Serializes the `BacktestResult` to the standard `.log` format and returns it as `text/plain`.
 
-Drag `sample/demo.log` onto the page, or click **Upload New Logs**. Use the playback bar to scrub through ticks.
+The browser receives the log and passes it through the same `parseFile()` pipeline used for manually uploaded files — no separate code path.
 
----
-
-## In-Browser Backtest (Vercel deployment)
-
-```
-1. Go to the live demo  →  prosperity-visualizer.vercel.app
-2. Click "Select trader.py" in the sidebar
-3. Choose demo_trader.py from this repo (or your own trader)
-4. Pick Round 0 days (-1 and/or -2)
-5. Click "Run Backtest" — results load in ~3 s
-```
-
-`demo_trader.py` is a ready-to-run market-making strategy for EMERALDS and TOMATOES that populates all 8 dashboard tabs, including the Microstructure and Imbalance views via `SIG` signal logging.
-
-The Vercel serverless function (`api/backtest.py`) executes your `Trader` class against bundled market data, serializes the result as a `.log` file, and streams it back to the browser. The frontend parser handles it identically to a manually uploaded file.
-
-> **Note:** Only Round 0 data is bundled on the server. For rounds 1–5, run the backtester locally and drag the resulting `.log` onto the page.
->
-> **Import restrictions:** The serverless environment only has access to the Python standard library and `datamodel`. Traders that import `numpy`, `pandas`, or custom modules should be run locally.
+Only Round 0 data is bundled on the server. For later rounds, run the backtester locally and upload the resulting `.log` file. Traders that depend on `numpy`, `pandas`, or other third-party packages must also be run locally, as the serverless environment provides only the standard library and `datamodel`.
 
 ---
 
@@ -76,41 +43,62 @@ The Vercel serverless function (`api/backtest.py`) executes your `Trader` class 
 ```bash
 pip install -e backtester/
 
-# Backtest your trader on round 0, days -1 and -2 with merged PnL
-prosperity4bt example_trader.py 0--1 0--2 --merge-pnl --out my_run.log
+# Backtest on Round 0, days -1 and -2, with merged PnL
+prosperity4bt demo_trader.py 0--1 0--2 --merge-pnl --out my_run.log
 
-# Load in the visualizer
-open index.html  # then drag my_run.log onto the page
+# Open the visualizer and drag my_run.log onto the page
+python -m http.server 8000
 ```
 
-### Logger class
+### Logger
 
-To get full visualizer output (own-trade overlays, position chart, sandbox logs), use the `Logger` class from `example_trader.py`:
+To populate own-trade overlays, position tracking, and sandbox logs in the visualizer, call `logger.flush()` at the end of every `Trader.run()` invocation:
 
 ```python
-from example_trader import Logger
+from demo_trader import Logger
 
 logger = Logger()
 
 class Trader:
     def run(self, state: TradingState):
         orders = {}
-        # ... your logic ...
+        # ... strategy logic ...
         logger.flush(state, orders, conversions=0, trader_data="")
         return orders, 0, ""
 ```
 
-### SIG signals (optional)
+### SIG Signal Logging
 
-Emit structured signals from your trader to unlock the Microstructure and Imbalance tabs:
+To unlock the Microstructure and Imbalance tabs, emit structured signal lines from inside `Trader.run()`:
 
 ```python
-# Inside Trader.run():
-print(f"SIG|{product}|wall_mid={fair_value}|bid_wall={best_bid}|ask_wall={best_ask}|obi={obi:.3f}")
+print(f"SIG|{product}|fair_value={fair:.1f}|bid_wall={bid}|ask_wall={ask}|obi={obi:.3f}")
 ```
 
-The dashboard parses `SIG|SYMBOL|key=val|...` lines from lambda logs. Supported keys:
-`wall_mid`, `bid_wall`, `ask_wall`, `fair_value`, `ema`, `obi`, `tape_vel`, `position`.
+The parser reads `SIG|SYMBOL|key=value|...` lines from the lambda log. Supported keys: `wall_mid`, `bid_wall`, `ask_wall`, `fair_value`, `ema`, `obi`, `tape_vel`, `position`.
+
+---
+
+## Architecture
+
+```
+index.html          Static HTML/CSS shell — no framework, no build step
+src/parser.js       All parsing and analytics, running client-side:
+                      parseBT()        — backtester .log (three-section format)
+                      parseLambdaLog() — submission JSON / lambda log arrays
+                      computeHurst()   — Rescaled Range via log-log polyfit
+                      computeFFT()     — radix-2 Cooley-Tukey in-place DFT
+                      OBI and tape velocity from L2 order depth snapshots
+src/charts.js       Plotly.js renderers for all eight tabs
+src/app.js          Application state, file handling, playback controls,
+                      tab routing, and postBacktest() fetch/parse pipeline
+api/backtest.py     Vercel Python serverless function — runs Trader class
+                      against bundled CSVs, returns serialized .log text
+backtester/         prosperity4bt backtester (see credits below)
+datamodel.py        Official Prosperity 4 datamodel
+```
+
+The entire analytics pipeline — Hurst exponent, FFT, OBI, tape velocity, and maker/taker classification — runs in the browser as plain ES modules. No build tooling, no bundler, no server required for local use.
 
 ---
 
@@ -132,70 +120,37 @@ Trade History:
 
 ### Submission `.json`
 
-Array of lambda log rows:
+Lambda log array format:
 ```json
 [[timestamp, traderData, listings, orderDepths, ownTrades, marketTrades, position, observations], submittedOrders, conversions, traderData, logString]
 ```
 
 ---
 
-## Deploy to Vercel
+## Analytics Reference
+
+| Metric | Implementation |
+|--------|----------------|
+| Hurst exponent | Log-log polyfit of lagged standard deviations multiplied by 2.0 |
+| FFT | Radix-2 Cooley-Tukey; period = (n × 100 ms) / k, matching `scipy.rfftfreq(n, d=100)` |
+| OBI | `(bidVol - askVol) / (bidVol + askVol)` computed per tick from L2 depth |
+| Tape velocity | Net signed taker volume per tick; sign determined by position relative to mid |
+| Maker/taker | Equidistant multi-lot simultaneous prints classified as makers; directional single-lot as takers |
+| Day rollover | `timestamp < prevTimestamp` triggers `goff += 1,000,000`; PnL offset accumulated per symbol |
+
+---
+
+## Deploying
 
 ```bash
 npm i -g vercel
 vercel deploy --prod
 ```
 
-Vercel auto-detects the static site. The `api/backtest.py` serverless function is picked up automatically. No build step required.
-
-**Requirements:** The Python function uses `jsonpickle`, `orjson`, and `tqdm` — installed from `api/requirements.txt` by Vercel automatically.
+Vercel detects the static site and the `api/backtest.py` serverless function automatically. Dependencies are installed from `api/requirements.txt`. No build step is required.
 
 ---
 
-## Architecture
-
-```
-index.html          Pure HTML/CSS shell — no framework, no build step
-src/parser.js       Client-side port of all parsing and analytics:
-                      parseBT()        — backtester .log (3-section format)
-                      parseLambdaLog() — submission JSON / lambda logs
-                      computeHurst()   — Rescaled Range via polyfit
-                      computeFFT()     — radix-2 Cooley-Tukey in-place
-                      OBI / tape velocity computed from L2 order depths
-src/charts.js       Plotly.js renderers for all 8 tabs
-src/app.js          State machine, file handling, playback, tab routing,
-                      postBacktest() → POST /api/backtest → parseFile()
-api/backtest.py     Vercel Python serverless function:
-                      imports backtester programmatically (no CLI),
-                      runs Trader against bundled CSVs,
-                      serializes BacktestResult → .log text → browser
-backtester/         prosperity4bt — open-source IMC backtester
-datamodel.py        Official Prosperity 4 datamodel (data classes only)
-```
-
-**No build step. No framework. No server for local use.** The entire parsing pipeline — including Hurst, FFT, OBI, and maker/taker classification — runs in the browser via plain ES modules.
-
----
-
-## Analytics Reference
-
-| Metric | Method |
-|--------|--------|
-| Hurst exponent | Polyfit on log-log of lagged std deviations × 2.0; H < 0.5 = mean-reverting, H > 0.5 = trending |
-| FFT | Radix-2 Cooley-Tukey; period = (n × 100ms) / k to match `scipy.rfftfreq(n, d=100)` |
-| OBI | `(bidVol − askVol) / (bidVol + askVol)` per tick from L2 data |
-| Tape velocity | Net signed taker volume per tick (above/below mid = buy/sell) |
-| Maker/taker | Equidistant multi-lot trades at same timestamp = makers; single/directional = takers |
-| Day rollover | `timestamp < prevTimestamp → goff += 1,000,000`; PnL offset accumulated per symbol |
-
----
-
-## Sample Data
-
-`sample/demo.log` — 300 ticks of KELP and SQUID_INK from Round 0 Day -1, generated from bundled CSVs. Sufficient for Hurst and FFT analysis (> 100 ticks required).
-
----
-
-## Backtester Credit
+## Credits
 
 `backtester/` is a fork of [jmerle/imc-prosperity-3-backtester](https://github.com/jmerle/imc-prosperity-3-backtester), adapted for Prosperity 4.
