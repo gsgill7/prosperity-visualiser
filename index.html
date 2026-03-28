@@ -87,6 +87,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-
 .wl{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--t3)}.wl h2{font-size:15px;font-weight:700;color:var(--t0);margin-bottom:3px}.wl p{font-size:12px}
 .ld{display:none;position:fixed;inset:0;background:rgba(17,17,19,0.8);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:10px}.ld.on{display:flex}.ld-sp{width:22px;height:22px;border:2px solid var(--bg4);border-top-color:var(--t0);border-radius:50%;animation:sp .6s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}.ld-t{font-size:11px;color:var(--t2)}
 input[type=file]{display:none}
+/* Volume chips (Bot Patterns tab) */
+.vc{display:inline-block;padding:3px 8px;border-radius:12px;font-size:9px;font-weight:700;cursor:pointer;border:1px solid var(--brd);color:var(--t3);background:transparent;text-transform:uppercase;letter-spacing:0.04em}.vc.on{background:var(--bg4);color:var(--t1);border-color:var(--brd2)}.vc:hover:not(.on){border-color:var(--bg4);color:var(--t2)}
+/* Backtest panel */
+.bt-panel{display:flex;flex-direction:column;gap:6px}
+.bt-h{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px}
+.bt-upload{display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:8px 10px;cursor:pointer;font-size:11px;color:var(--t2);transition:border-color .15s}.bt-upload:hover{border-color:var(--brd2);color:var(--t1)}.bt-upload svg{width:13px;height:13px;flex-shrink:0;color:var(--t3)}.bt-fname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.bt-run{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--blue);color:#fff;border-radius:6px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.03em;transition:opacity .15s}.bt-run:hover{opacity:.85}.bt-run svg{width:12px;height:12px}
+.bt-merge{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--t2);padding:2px 0;user-select:none}.bt-merge-b{width:13px;height:13px;border:1.5px solid var(--brd2);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent;flex-shrink:0}.bt-merge.on .bt-merge-b{border-color:var(--blue);background:var(--blue);color:#fff}
+.bt-note{font-size:9px;color:var(--t3);line-height:1.4}
 @media(max-width:960px){.g2{grid-template-columns:1fr}.g2r{display:none}.met{grid-template-columns:repeat(3,1fr)}.tk-cards{grid-template-columns:1fr}}
 </style></head><body>
 <div class="ld" id="ld"><div class="ld-sp"></div><div class="ld-t">Parsing...</div></div>
@@ -97,6 +106,18 @@ input[type=file]{display:none}
   <div class="sb-s" id="sRuns" style="display:none"><div class="sb-l" id="runHdr">Runs</div><div id="runList"></div></div>
   <div class="sb-s" id="sp" style="display:none"><div class="sb-l2"><span>Products</span></div><div id="pl"></div></div>
   <div class="sb-s" id="so" style="display:none"><div class="sb-l">Display</div><div class="tg" id="tn" onclick="togN()"><div class="tg-b">&#x2713;</div><span>NPC market flow</span></div></div>
+  <div class="sb-s"><div class="sb-l">Backtest</div><div class="bt-panel">
+    <div class="bt-upload" onclick="document.getElementById('bfi').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg><span class="bt-fname" id="bt-fname">Select trader.py</span></div>
+    <input type="file" id="bfi" accept=".py" onchange="btSelFile(this.files[0])">
+    <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px">Round 0 Data</div>
+    <div class="pill-row" style="margin-bottom:4px">
+      <div class="pill on" id="btd-0--1" onclick="btTogDay('0--1')">Day &minus;1</div>
+      <div class="pill on" id="btd-0--2" onclick="btTogDay('0--2')">Day &minus;2</div>
+    </div>
+    <div class="bt-merge" id="bt-merge" onclick="btTogMerge()"><div class="bt-merge-b" id="bt-merge-b">&#x2713;</div>Merge PnL across days</div>
+    <div class="bt-run" onclick="postBacktest()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Run Backtest</div>
+    <div class="bt-note">Runs your Trader class against bundled Round 0 market data server-side and loads the result directly into the visualizer.</div>
+  </div></div>
 </div>
 <div class="mn">
   <div class="pb" id="pbr" style="display:none">

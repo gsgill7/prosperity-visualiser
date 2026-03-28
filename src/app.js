@@ -10,6 +10,10 @@ window.S = {
   wallMidDist: null,
   botOv: { bid: false, mid: false, ask: false, mine: true },
   _bv: null,
+  // Backtest panel state
+  btFile: null,
+  btDays: new Set(['0--1', '0--2']),
+  btMerge: false,
 };
 
 const TABS = ['Time-Series', 'Flow Analysis', 'Seasonality', 'Volume Profile', 'Stochastic', 'Microstructure', 'Bot Patterns', 'Imbalance'];
@@ -252,6 +256,73 @@ document.addEventListener('keydown', e => {
   else { const n = +e.key; if (n >= 1 && n <= TABS.length) stab(n - 1); }
 });
 
+// ─── Backtest panel ───────────────────────────────────────────────────────────
+function btSelFile(file) {
+  if (!file) return;
+  window.S.btFile = file;
+  document.getElementById('bt-fname').textContent = file.name;
+}
+
+function btTogDay(day) {
+  const S = window.S;
+  if (S.btDays.has(day)) S.btDays.delete(day); else S.btDays.add(day);
+  const el = document.getElementById('btd-' + day);
+  if (el) el.classList.toggle('on', S.btDays.has(day));
+}
+
+function btTogMerge() {
+  window.S.btMerge = !window.S.btMerge;
+  document.getElementById('bt-merge').classList.toggle('on', window.S.btMerge);
+}
+
+async function postBacktest() {
+  const S = window.S;
+  if (!S.btFile) { alert('Select a trader.py file first.'); return; }
+  if (!S.btDays.size) { alert('Select at least one day to backtest.'); return; }
+
+  const ld = document.getElementById('ld');
+  const ldT = ld.querySelector('.ld-t');
+  if (ldT) ldT.textContent = 'Running backtest…';
+  ld.classList.add('on');
+
+  try {
+    const code = await S.btFile.text();
+    const resp = await fetch('/api/backtest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        trader_code: code,
+        days: [...S.btDays].sort(),
+        merge_pnl: S.btMerge,
+      }),
+    });
+
+    if (!resp.ok) {
+      let msg = resp.statusText;
+      try { const e = await resp.json(); msg = e.error || msg; } catch (_) { /* ignore */ }
+      throw new Error(msg);
+    }
+
+    const logText = await resp.text();
+    const data = window.parseFile(logText);
+    const runId = String(++S._runCounter);
+    const name  = S.btFile.name.replace(/\.py$/i, '') + ' [bt]';
+    initRunData(data);
+    S.runs[runId]  = { name, data };
+    S.activeRun    = runId;
+    S.comparing.add(runId);
+    S.data  = data;
+    S.prods = Object.keys(data).sort();
+    document.getElementById('bfi').value = '';
+    init();
+  } catch (err) {
+    alert('Backtest failed: ' + err.message);
+  } finally {
+    if (ldT) ldT.textContent = 'Parsing…';
+    ld.classList.remove('on');
+  }
+}
+
 // Expose globals used by inline onclick handlers in charts.js / index.html
 window.cf         = cf;
 window.init       = init;
@@ -272,3 +343,7 @@ window.setCM      = setCM;
 window.togOv      = togOv;
 window.setWMD     = setWMD;
 window.proc       = proc;
+window.btSelFile  = btSelFile;
+window.btTogDay   = btTogDay;
+window.btTogMerge = btTogMerge;
+window.postBacktest = postBacktest;
