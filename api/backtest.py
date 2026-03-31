@@ -159,7 +159,7 @@ class handler(BaseHTTPRequestHandler):
             # ── Run backtest ─────────────────────────────────────────────────
             file_reader = FileSystemReader(_RESOURCES)
             results: list[BacktestResult] = []
-            for day_spec in sorted(days):
+            for day_spec in sorted(days, key=lambda s: _parse_day(s)):
                 rnd, day = _parse_day(day_spec)
                 results.append(run_backtest(
                     mod.Trader(),
