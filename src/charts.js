@@ -180,16 +180,20 @@ function t0() {
       };
       ['wall_mid', 'bid_wall', 'ask_wall', 'fair_value', 'ema'].forEach(k => {
         if (!d.signals[k]) return;
+        if (k === 'bid_wall' && !ov.bid) return;
+        if (k === 'ask_wall' && !ov.ask) return;
         tr.push({ x: d.signals[k].map(p => p[0]), y: d.signals[k].map(p => p[1]), name: k, type: 'scattergl', mode: 'lines', line: sty[k] || { color: C.dim, width: 1 } });
       });
 
-      // Bollinger Band overlay — auto-detected if bb_upper/bb_lower signals present
-      if (d.signals.bb_lower && d.signals.bb_upper) {
-        tr.push({ x: d.signals.bb_lower.map(p => p[0]), y: d.signals.bb_lower.map(p => p[1]), name: 'BB Lower', type: 'scatter', mode: 'lines', line: { color: 'rgba(168,85,247,0.5)', width: 1 }, showlegend: false, hoverinfo: 'skip' });
-        tr.push({ x: d.signals.bb_upper.map(p => p[0]), y: d.signals.bb_upper.map(p => p[1]), name: 'BB Band',  type: 'scatter', mode: 'lines', line: { color: 'rgba(168,85,247,0.5)', width: 1 }, fill: 'tonexty', fillcolor: 'rgba(168,85,247,0.07)' });
-      }
-      if (d.signals.bb_mid) {
-        tr.push({ x: d.signals.bb_mid.map(p => p[0]), y: d.signals.bb_mid.map(p => p[1]), name: 'BB Mid', type: 'scattergl', mode: 'lines', line: { color: C.purple, width: 1.5, dash: 'dot' } });
+      // Bollinger Band overlay — gated behind BB Bands toggle
+      if (ov.bb) {
+        if (d.signals.bb_lower && d.signals.bb_upper) {
+          tr.push({ x: d.signals.bb_lower.map(p => p[0]), y: d.signals.bb_lower.map(p => p[1]), name: 'BB Lower', type: 'scatter', mode: 'lines', line: { color: 'rgba(168,85,247,0.85)', width: 1.5 }, showlegend: false, hoverinfo: 'skip' });
+          tr.push({ x: d.signals.bb_upper.map(p => p[0]), y: d.signals.bb_upper.map(p => p[1]), name: 'BB Band',  type: 'scatter', mode: 'lines', line: { color: 'rgba(168,85,247,0.85)', width: 1.5 }, fill: 'tonexty', fillcolor: 'rgba(168,85,247,0.15)' });
+        }
+        if (d.signals.bb_mid) {
+          tr.push({ x: d.signals.bb_mid.map(p => p[0]), y: d.signals.bb_mid.map(p => p[1]), name: 'BB Mid', type: 'scattergl', mode: 'lines', line: { color: C.purple, width: 2, dash: 'dot' } });
+        }
       }
     }
 
@@ -271,7 +275,7 @@ function t0() {
 
   const el = document.getElementById('p0');
   el.innerHTML = `<div class="g2"><div class="g2l">
-    <div class="card"><div class="card-h"><div class="card-t">Price &amp; Liquidity: ${S.prod}</div><div class="card-leg">${ov.ask || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--red)"></div>ASK</div>' : ''}${ov.mid ? '<div class="lg"><div class="lg-d" style="background:var(--t0)"></div>MID</div>' : ''}${ov.bid || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--teal)"></div>BID</div>' : ''}</div></div><div class="pill-row"><div class="pill ${m === 'prices' ? 'on' : ''}" onclick="setCM('prices')">Prices</div><div class="pill ${m === 'spread' ? 'on' : ''}" onclick="setCM('spread')">Spread</div><div class="pill ${m === 'volume' ? 'on' : ''}" onclick="setCM('volume')">Volume</div><div class="pill-sep"></div><div class="pill ${ov.bid ? 'on' : ''}" onclick="togOv('bid')">Bid</div><div class="pill ${ov.mid ? 'on' : ''}" onclick="togOv('mid')">Mid</div><div class="pill ${ov.ask ? 'on' : ''}" onclick="togOv('ask')">Ask</div><div class="pill ${ov.orders ? 'on' : ''}" onclick="togOv('orders')">Orders (All)</div>${wmPills}</div><div id="c0a"></div></div>
+    <div class="card"><div class="card-h"><div class="card-t">Price &amp; Liquidity: ${S.prod}</div><div class="card-leg">${ov.ask || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--red)"></div>ASK</div>' : ''}${ov.mid ? '<div class="lg"><div class="lg-d" style="background:var(--t0)"></div>MID</div>' : ''}${ov.bid || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--teal)"></div>BID</div>' : ''}</div></div><div class="pill-row"><div class="pill ${m === 'prices' ? 'on' : ''}" onclick="setCM('prices')">Prices</div><div class="pill ${m === 'spread' ? 'on' : ''}" onclick="setCM('spread')">Spread</div><div class="pill ${m === 'volume' ? 'on' : ''}" onclick="setCM('volume')">Volume</div><div class="pill-sep"></div><div class="pill ${ov.bid ? 'on' : ''}" onclick="togOv('bid')">Bid</div><div class="pill ${ov.mid ? 'on' : ''}" onclick="togOv('mid')">Mid</div><div class="pill ${ov.ask ? 'on' : ''}" onclick="togOv('ask')">Ask</div><div class="pill ${ov.orders ? 'on' : ''}" onclick="togOv('orders')">Orders (All)</div>${d.signals && (d.signals.bb_mid || d.signals.bb_upper) ? `<div class="pill ${ov.bb ? 'on' : ''}" onclick="togOv('bb')">BB Bands</div>` : ''}${wmPills}</div><div id="c0a"></div></div>
     <div class="card"><div class="card-h"><div class="card-t">PnL Performance</div><div class="card-leg">${pnlTr.map(t => `<div class="lg"><div class="lg-d" style="background:${t.line.color}"></div>${t.name}</div>`).join('')}</div></div><div id="c0b"></div></div>
     ${d.spreads ? `<div class="card"><div class="card-h"><div class="card-t">Spread: ${S.prod}</div></div><div id="c0s"></div></div>` : ''}
     ${posArr.length ? `<div class="card"><div class="card-h"><div class="card-t">Position: ${S.prod}</div></div><div id="c0c"></div></div>` : ''}

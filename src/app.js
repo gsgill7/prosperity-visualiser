@@ -4,7 +4,7 @@
 window.S = {
   data: null, prod: null, prods: [], tick: 0, maxTick: 0,
   playing: false, speed: 1, timer: null, tab: 0, npc: false, fn: '',
-  cMode: 'prices', ov: { bid: false, mid: false, ask: false, orders: true },
+  cMode: 'prices', ov: { bid: false, mid: false, ask: false, orders: true, bb: false },
   runs: {}, activeRun: null, comparing: new Set(),
   _runCounter: 0,
   wallMidDist: null,
