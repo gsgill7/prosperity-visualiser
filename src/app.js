@@ -98,8 +98,9 @@ function init() {
   updRuns();
   document.getElementById('pl').innerHTML = window.S.prods
     .map(p => `<div class="prod" data-p="${p}" onclick="sel('${p}')">${p}</div>`).join('');
+  const TAB_SEP = '<div class="tab-sep"></div>';
   document.getElementById('tabs').innerHTML = TABS
-    .map((t, i) => `<div class="tab${i === 0 ? ' on' : ''}" onclick="stab(${i})">${t}</div>`).join('');
+    .map((t, i) => (i === 3 || i === 6 ? TAB_SEP : '') + `<div class="tab${i === 0 ? ' on' : ''}" onclick="stab(${i})">${t}</div>`).join('');
   document.getElementById('pns').innerHTML = TABS
     .map((_, i) => `<div class="tc${i === 0 ? ' on' : ''}" id="p${i}"></div>`).join('');
   sel(window.S.prods[0]);

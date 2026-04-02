@@ -275,7 +275,7 @@ function t0() {
 
   const el = document.getElementById('p0');
   el.innerHTML = `<div class="g2"><div class="g2l">
-    <div class="card"><div class="card-h"><div class="card-t">Price &amp; Liquidity: ${S.prod}</div><div class="card-leg">${ov.ask || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--red)"></div>ASK</div>' : ''}${ov.mid ? '<div class="lg"><div class="lg-d" style="background:var(--t0)"></div>MID</div>' : ''}${ov.bid || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--teal)"></div>BID</div>' : ''}</div></div><div class="pill-row"><div class="pill ${m === 'prices' ? 'on' : ''}" onclick="setCM('prices')">Prices</div><div class="pill ${m === 'spread' ? 'on' : ''}" onclick="setCM('spread')">Spread</div><div class="pill ${m === 'volume' ? 'on' : ''}" onclick="setCM('volume')">Volume</div><div class="pill-sep"></div><div class="pill ${ov.bid ? 'on' : ''}" onclick="togOv('bid')">Bid</div><div class="pill ${ov.mid ? 'on' : ''}" onclick="togOv('mid')">Mid</div><div class="pill ${ov.ask ? 'on' : ''}" onclick="togOv('ask')">Ask</div><div class="pill ${ov.orders ? 'on' : ''}" onclick="togOv('orders')">Orders (All)</div>${d.signals && (d.signals.bb_mid || d.signals.bb_upper) ? `<div class="pill ${ov.bb ? 'on' : ''}" onclick="togOv('bb')">BB Bands</div>` : ''}${wmPills}</div><div id="c0a"></div></div>
+    <div class="card"><div class="card-h"><div class="card-t">Price &amp; Liquidity: ${S.prod}</div><div class="card-leg">${ov.ask || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--red)"></div>ASK</div>' : ''}${ov.mid ? '<div class="lg"><div class="lg-d" style="background:var(--t0)"></div>MID</div>' : ''}${ov.bid || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--teal)"></div>BID</div>' : ''}</div></div><div class="pill-row"><span style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em">View</span><div class="pill ${m === 'prices' ? 'on' : ''}" onclick="setCM('prices')">Prices</div><div class="pill ${m === 'spread' ? 'on' : ''}" onclick="setCM('spread')">Spread</div><div class="pill ${m === 'volume' ? 'on' : ''}" onclick="setCM('volume')">Volume</div><div class="pill-sep"></div><span style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Overlays</span><div class="pill ${ov.bid ? 'on' : ''}" onclick="togOv('bid')">Bid</div><div class="pill ${ov.mid ? 'on' : ''}" onclick="togOv('mid')">Mid</div><div class="pill ${ov.ask ? 'on' : ''}" onclick="togOv('ask')">Ask</div><div class="pill ${ov.orders ? 'on' : ''}" onclick="togOv('orders')">Orders (All)</div>${d.signals && (d.signals.bb_mid || d.signals.bb_upper) ? `<div class="pill ${ov.bb ? 'on' : ''}" onclick="togOv('bb')">BB Bands</div>` : ''}${wmPills}</div><div id="c0a"></div></div>
     <div class="card"><div class="card-h"><div class="card-t">PnL Performance</div><div class="card-leg">${pnlTr.map(t => `<div class="lg"><div class="lg-d" style="background:${t.line.color}"></div>${t.name}</div>`).join('')}</div></div><div id="c0b"></div></div>
     ${d.spreads ? `<div class="card"><div class="card-h"><div class="card-t">Spread: ${S.prod}</div></div><div id="c0s"></div></div>` : ''}
     ${posArr.length ? `<div class="card"><div class="card-h"><div class="card-t">Position: ${S.prod}</div></div><div id="c0c"></div></div>` : ''}
@@ -422,6 +422,9 @@ function t6() {
     h += [1, 2, 3, 5].map(v => `<div class="pill ${S.wallMidDist === v ? 'on' : ''}" onclick="setWMD(${v})">\u00b1${v}</div>`).join('');
   }
   h += '<div class="pill-sep"></div>';
+  h += '<span style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Vol</span>';
+  h += `<div class="pill ${S._bv.size === vols.length ? 'on' : ''}" onclick="tvAll()">All</div>`;
+  h += `<div class="pill ${S._bv.size === 0 ? 'on' : ''}" onclick="tvNone()">None</div>`;
   h += vols.map(v => `<div class="vc${S._bv.has(v) ? ' on' : ''}" onclick="tv(${v})">${v}</div>`).join('');
   h += '</div><div class="card"><div id="c6"></div></div>';
   el.innerHTML = h;
@@ -487,6 +490,13 @@ function tv(v) {
   if (window.S._bv.has(v)) window.S._bv.delete(v); else window.S._bv.add(v);
   t6();
 }
+function tvAll() {
+  const d = window.S.data[window.S.prod];
+  const vols = [...new Set([...d.market_trades, ...d.buy_trades, ...d.sell_trades].map(t => t[2]))];
+  window.S._bv = new Set(vols);
+  t6();
+}
+function tvNone() { window.S._bv = new Set(); t6(); }
 
 // ─── T7: Imbalance — OBI + tape velocity + wall mid skew + correlation ────────
 function t7() {

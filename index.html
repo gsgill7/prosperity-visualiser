@@ -47,7 +47,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-
 .met{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
 .mc{background:var(--bg1);border:1px solid var(--brd);border-radius:8px;padding:12px 14px;position:relative}.mc-i{position:absolute;top:10px;right:12px;color:var(--t3);opacity:0.4}.mc-i svg{width:16px;height:16px}
 .mc-l{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:0.05em}.mc-v{font-size:20px;font-weight:700;color:var(--t0);margin-top:4px;font-variant-numeric:tabular-nums}.mc-v.g{color:var(--green)}.mc-v.r{color:var(--red)}.mc-sub{font-size:9px;color:var(--t3);margin-top:2px}
-.tabs{display:flex;border-bottom:1px solid var(--brd);margin-bottom:14px}.tab{padding:8px 14px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:0.03em}.tab:hover{color:var(--t2)}.tab.on{color:var(--t0);border-bottom-color:var(--t0)}
+.tabs{display:flex;border-bottom:1px solid var(--brd);margin-bottom:14px;align-items:center}.tab{padding:8px 14px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:0.03em}.tab:hover{color:var(--t2)}.tab.on{color:var(--t0);border-bottom-color:var(--t0)}.tab-sep{width:1px;height:16px;background:var(--brd);align-self:center;margin:0 4px;flex-shrink:0}
 .tc{display:none}.tc.on{display:block}
 .card{background:var(--bg1);border:1px solid var(--brd);border-radius:8px;padding:14px;margin-bottom:10px}
 .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.card-t{font-size:11px;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:0.04em}
@@ -96,7 +96,7 @@ input[type=file]{display:none}
 .bt-demo{display:flex;align-items:center;justify-content:center;gap:5px;background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(168,85,247,0.15));border:1px solid rgba(59,130,246,0.35);border-radius:6px;padding:8px 10px;cursor:pointer;font-size:11px;font-weight:700;color:var(--t0);transition:all .15s}.bt-demo:hover{border-color:var(--blue);background:linear-gradient(135deg,rgba(59,130,246,0.25),rgba(168,85,247,0.25))}.bt-demo svg{width:13px;height:13px;color:#f59e0b}
 .bt-run{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--blue);color:#fff;border-radius:6px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.03em;transition:opacity .15s;margin-top:2px}.bt-run:hover{opacity:.85}.bt-run svg{width:12px;height:12px}
 .bt-merge{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:var(--t2);padding:2px 0;user-select:none}.bt-merge-b{width:13px;height:13px;border:1.5px solid var(--brd2);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent;flex-shrink:0}.bt-merge.on .bt-merge-b{border-color:var(--blue);background:var(--blue);color:#fff}
-.bt-note{font-size:9px;color:var(--t3);line-height:1.4}
+.bt-note{font-size:9px;color:var(--t2);line-height:1.4}
 @media(max-width:960px){.g2{grid-template-columns:1fr}.g2r{display:none}.met{grid-template-columns:repeat(3,1fr)}.tk-cards{grid-template-columns:1fr}}
 </style></head><body>
 <div class="ld" id="ld"><div class="ld-sp"></div><div class="ld-t">Parsing...</div></div>
