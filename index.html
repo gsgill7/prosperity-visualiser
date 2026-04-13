@@ -89,7 +89,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-
 .wl-cta{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(168,85,247,0.15));border:1px solid rgba(59,130,246,0.35);border-radius:8px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:700;color:var(--t0);transition:all .15s;font-family:inherit}.wl-cta:hover{border-color:var(--blue);background:linear-gradient(135deg,rgba(59,130,246,0.25),rgba(168,85,247,0.25))}.wl-cta svg{width:16px;height:16px;color:#f59e0b}
 .wl-hint{font-size:10px;color:var(--t3);margin-top:8px}
 .ld{display:none;position:fixed;inset:0;background:rgba(17,17,19,0.8);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:10px}.ld.on{display:flex}.ld-sp{width:22px;height:22px;border:2px solid var(--bg4);border-top-color:var(--t0);border-radius:50%;animation:sp .6s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}.ld-t{font-size:11px;color:var(--t2)}
-input[type=file]{display:none}
+input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 /* Focus indicators for keyboard navigation */
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
 button:focus-visible,input:focus-visible,.tab:focus-visible,.pill:focus-visible,.prod:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
