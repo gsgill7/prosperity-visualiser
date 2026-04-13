@@ -89,7 +89,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-
 .wl-cta{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(168,85,247,0.15));border:1px solid rgba(59,130,246,0.35);border-radius:8px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:700;color:var(--t0);transition:all .15s;font-family:inherit}.wl-cta:hover{border-color:var(--blue);background:linear-gradient(135deg,rgba(59,130,246,0.25),rgba(168,85,247,0.25))}.wl-cta svg{width:16px;height:16px;color:#f59e0b}
 .wl-hint{font-size:10px;color:var(--t3);margin-top:8px}
 .ld{display:none;position:fixed;inset:0;background:rgba(17,17,19,0.8);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:10px}.ld.on{display:flex}.ld-sp{width:22px;height:22px;border:2px solid var(--bg4);border-top-color:var(--t0);border-radius:50%;animation:sp .6s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}.ld-t{font-size:11px;color:var(--t2)}
-input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 /* Focus indicators for keyboard navigation */
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
 button:focus-visible,input:focus-visible,.tab:focus-visible,.pill:focus-visible,.prod:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -111,15 +110,14 @@ button:focus-visible,input:focus-visible,.tab:focus-visible,.pill:focus-visible,
 <div class="sb-overlay" onclick="document.querySelector('.sb').classList.remove('open');this.classList.remove('on')"></div>
 <div class="sb">
   <div class="sb-hd"><div class="sb-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="sb-ti">Prosperity Visualizer</div></div>
-  <div class="sb-s"><label class="ubtn" id="ubtn" for="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload New Logs</label><input type="file" id="fi"><div class="fp" id="fp"><span id="fn"></span><span class="x" onclick="cf()">&#x2715;</span></div></div>
+  <div class="sb-s"><div class="ubtn" id="ubtn" style="position: relative; overflow: hidden;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload New Logs<input type="file" id="fi" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"></div><div class="fp" id="fp"><span id="fn"></span><span class="x" onclick="cf()">&#x2715;</span></div></div>
   <div class="sb-s" id="sRuns" style="display:none"><div class="sb-l" id="runHdr">Runs</div><div id="runList"></div></div>
   <div class="sb-s" id="sp" style="display:none"><div class="sb-l2"><span>Products</span></div><div id="pl"></div></div>
   <div class="sb-s" id="so" style="display:none"><div class="sb-l">Display</div><div class="tg" id="tn" onclick="togN()"><div class="tg-b">&#x2713;</div><span>NPC market flow</span></div></div>
   <div class="sb-s"><div class="sb-l">Backtest</div><div class="bt-panel">
     <div class="bt-demo" onclick="useDemoTrader()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Use Demo Trader</div>
     <div class="bt-or">or upload your own</div>
-    <label class="bt-upload" for="bfi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg><span class="bt-fname" id="bt-fname">Select trader.py</span></label>
-    <input type="file" id="bfi" onchange="btSelFile(this.files[0])">
+    <div class="bt-upload" style="position: relative; overflow: hidden;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg><span class="bt-fname" id="bt-fname">Select trader.py</span><input type="file" id="bfi" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="btSelFile(this.files[0])"></div>
     <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px">Round 0 Data</div>
     <div class="pill-row" style="margin-bottom:4px">
       <div class="pill on" id="btd-0--1" onclick="btTogDay('0--1')">Day &minus;1</div>
