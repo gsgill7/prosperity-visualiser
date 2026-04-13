@@ -13,13 +13,7 @@ Upload a backtest log to scrub through every tick and analyse market microstruct
 | Tab | Description |
 |-----|-------------|
 | **Time-Series** | Candlestick price chart with own-trade overlays and signal annotations (fair value, EMA, wall mid). Toggleable overlays for Bid, Ask, Mid, Orders, and BB Bands (auto-detected when `bb_mid`/`bb_upper`/`bb_lower` SIG signals are present). Tick-scrubber replays the full L2 order book snapshot at any timestamp. Supports multi-run PnL comparison. |
-| **Flow Analysis** | NPC lot-size distribution. Identifies which market-making bots are active based on their deterministic order sizes. |
-| **Seasonality** | Mid-price by intra-day timestamp, split across multiple days. Surfaces recurring intra-day price patterns. |
-| **Volume Profile** | Price-volume histogram of own fills. Shows where execution is concentrated relative to the price distribution. |
-| **Stochastic** | Hurst exponent via Rescaled Range and radix-2 FFT. Classifies the instrument as mean-reverting (H < 0.5), random walk (H ≈ 0.5), or trending (H > 0.5), with dominant period annotation. |
-| **Microstructure** | Engine liquidity walls plotted against execution prices. Computes edge-vs-wall-mid per fill. Requires `SIG` signal logging (see below). |
-| **Bot Patterns** | Maker/taker classification of NPC bots. Equidistant simultaneous multi-lot prints are classified as market makers; directional single-lot prints as takers. |
-| **Imbalance** | Order Book Imbalance (OBI), wall-mid skew, tape velocity, and Pearson correlation between OBI and subsequent price change. |
+
 
 ---
 
@@ -67,29 +61,6 @@ class Trader:
         return orders, 0, ""
 ```
 
-### SIG Signal Logging
-
-To unlock the Microstructure and Imbalance tabs, emit structured signal lines from inside `Trader.run()`:
-
-```python
-print(f"SIG|{product}|fair_value={fair:.1f}|bid_wall={bid}|ask_wall={ask}|obi={obi:.3f}")
-```
-
-The parser reads `SIG|SYMBOL|key=value|...` lines from the lambda log. Supported keys:
-
-| Key | Effect |
-|-----|--------|
-| `wall_mid` | Always-on white dashed line — primary fair value anchor |
-| `bid_wall` | Teal line, shown when **Bid** overlay is toggled on |
-| `ask_wall` | Red line, shown when **Ask** overlay is toggled on |
-| `fair_value` | Blue line |
-| `ema` | Orange dotted line |
-| `obi`, `tape_vel`, `position` | Microstructure / Imbalance tabs |
-| `bb_mid` | Purple dotted midline — shown when **BB Bands** toggle is on |
-| `bb_upper`, `bb_lower` | Purple shaded Bollinger Band — shown when **BB Bands** toggle is on; toggle auto-appears when these signals are detected |
-
----
-
 ## Architecture
 
 ```
@@ -109,7 +80,7 @@ backtester/         prosperity4bt backtester (see credits below)
 datamodel.py        Official Prosperity 4 datamodel
 ```
 
-The entire analytics pipeline — Hurst exponent, FFT, OBI, tape velocity, and maker/taker classification — runs in the browser as plain ES modules. No build tooling, no bundler, no server required for local use.
+The entire analytics pipeline runs in the browser as plain ES modules. No build tooling, no bundler, no server required for local use.
 
 ---
 
@@ -135,19 +106,6 @@ Lambda log array format:
 ```json
 [[timestamp, traderData, listings, orderDepths, ownTrades, marketTrades, position, observations], submittedOrders, conversions, traderData, logString]
 ```
-
----
-
-## Analytics Reference
-
-| Metric | Implementation |
-|--------|----------------|
-| Hurst exponent | Log-log polyfit of lagged standard deviations multiplied by 2.0 |
-| FFT | Radix-2 Cooley-Tukey; period = (n × 100 ms) / k, matching `scipy.rfftfreq(n, d=100)` |
-| OBI | `(bidVol - askVol) / (bidVol + askVol)` computed per tick from L2 depth |
-| Tape velocity | Net signed taker volume per tick; sign determined by position relative to mid |
-| Maker/taker | Equidistant multi-lot simultaneous prints classified as makers; directional single-lot as takers |
-| Day rollover | `timestamp < prevTimestamp` triggers `goff += 1,000,000`; PnL offset accumulated per symbol |
 
 ---
 
