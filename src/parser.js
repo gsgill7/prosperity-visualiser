@@ -286,10 +286,8 @@ function parseFile(content) {
       const bv = bi.reduce((s, b) => s + Math.abs(b[1]), 0);
       const av = ai.reduce((s, a) => s + Math.abs(a[1]), 0);
       const tot = bv + av;
-      obiArr.push(tot > 0 ? Math.round((bv - av) / tot * 10000) / 10000 : 0);
       let netTape = 0;
       for (const mt of (mktByTs[tsI] || [])) { if (midI !== null) { netTape += mt[1] >= midI ? mt[2] : -mt[2]; } }
-      tapeArr.push(netTape);
     }
 
     // Market dynamics
