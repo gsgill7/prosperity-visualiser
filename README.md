@@ -1,4 +1,106 @@
-# Prosperity Visualizer
+# Prosperity Visualizer 
+
+
+SETUP
+
+To use this please insert the following logger class into your trader file:
+'''python
+
+    from datamodel import *
+    import json
+    from typing import Any
+    class Logger:
+        def __init__(self) -> None:
+            self.logs: str = ""
+            self.max_log_length: int = 7500
+    
+        def print(self, *objects: Any, sep: str = " ", end: str = "\n") -> None:
+            log_line = sep.join(map(str, objects)) + end
+            if len(self.logs) + len(log_line) < self.max_log_length - 500:
+                self.logs += log_line
+            elif not self.logs.endswith("...\n"):
+                self.logs += "...\n"
+    
+        def flush(
+            self,
+            state: TradingState,
+            orders: dict[Symbol, list[Order]],
+            conversions: int,
+            trader_data: str,
+        ) -> None:
+            print(self.to_json([
+                self.compress_state(state, trader_data),
+                self.compress_orders(orders),
+                conversions,
+                trader_data,
+                self.logs,
+            ]))
+            self.logs = ""
+    
+        def compress_state(self, state: TradingState, trader_data: str) -> list[Any]:
+            return [
+                state.timestamp,
+                trader_data,
+                self.compress_listings(state.listings),
+                self.compress_order_depths(state.order_depths),
+                self.compress_trades(state.own_trades),
+                self.compress_trades(state.market_trades),
+                state.position,
+                self.compress_observations(state.observations),
+            ]
+    
+        def compress_listings(self, listings: dict[Symbol, Listing]) -> list[list[Any]]:
+            return [[l.symbol, l.product, l.denomination] for l in listings.values()] if listings else []
+    
+        def compress_order_depths(self, order_depths: dict[Symbol, OrderDepth]) -> dict[Symbol, list[Any]]:
+            return {s: [od.buy_orders or {}, od.sell_orders or {}] for s, od in order_depths.items()} if order_depths else {}
+    
+        def compress_trades(self, trades: dict[Symbol, list[Trade]]) -> list[list[Any]]:
+            return [[t.symbol, t.price, t.quantity, t.buyer, t.seller, t.timestamp]
+                    for arr in trades.values() for t in arr] if trades else []
+    
+        def compress_observations(self, observations: Observation) -> list[Any]:
+            if not observations:
+                return [{}, {}]
+            conv = {}
+            if hasattr(observations, "conversionObservations") and observations.conversionObservations:
+                for p, o in observations.conversionObservations.items():
+                    conv[p] = [
+                        getattr(o, "bidPrice", None), getattr(o, "askPrice", None),
+                        getattr(o, "transportFees", None), getattr(o, "exportTariff", None),
+                        getattr(o, "importTariff", None),
+                    ]
+            plain = getattr(observations, "plainValueObservations", {}) or {}
+            return [plain, conv]
+    
+        def compress_orders(self, orders: dict[Symbol, list[Order]]) -> list[list[Any]]:
+            return [[o.symbol, o.price, o.quantity] for arr in orders.values() for o in arr] if orders else []
+    
+        def to_json(self, value: Any) -> str:
+            return json.dumps(value, cls=ProsperityEncoder, separators=(",", ":"), default=str)
+
+
+    logger = Logger()
+   
+    class Trader:
+        def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:
+            orders = {}
+            conversions = 0
+            trader_data = state.traderData
+   
+            # ... YOUR TRADING LOGIC HERE ...
+            # (e.g., populate the orders dictionary)
+   
+            # 1. Log your custom signals so they draw on the chart!
+            logger.print(f"SIG|AMETHYSTS|fair_value=10000|ema=9998.5")
+   
+            # 2. Flush the logger at the very end to serialize the state
+            logger.flush(state, orders, conversions, trader_data)
+   
+            return orders, conversions, trader_data
+
+'''
+
 
 A tick-level L2 order book replay and analytics dashboard for the [IMC Prosperity](https://prosperity.imc.com/) algorithmic trading competition.
 
