@@ -111,14 +111,14 @@ button:focus-visible,input:focus-visible,.tab:focus-visible,.pill:focus-visible,
 <div class="sb-overlay" onclick="document.querySelector('.sb').classList.remove('open');this.classList.remove('on')"></div>
 <div class="sb">
   <div class="sb-hd"><div class="sb-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="sb-ti">Prosperity Visualizer</div></div>
-  <div class="sb-s"><button class="ubtn" id="ubtn" onclick="document.getElementById('fi').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload New Logs</button><input type="file" id="fi"><div class="fp" id="fp"><span id="fn"></span><span class="x" onclick="cf()">&#x2715;</span></div></div>
+  <div class="sb-s"><label class="ubtn" id="ubtn" for="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload New Logs</label><input type="file" id="fi"><div class="fp" id="fp"><span id="fn"></span><span class="x" onclick="cf()">&#x2715;</span></div></div>
   <div class="sb-s" id="sRuns" style="display:none"><div class="sb-l" id="runHdr">Runs</div><div id="runList"></div></div>
   <div class="sb-s" id="sp" style="display:none"><div class="sb-l2"><span>Products</span></div><div id="pl"></div></div>
   <div class="sb-s" id="so" style="display:none"><div class="sb-l">Display</div><div class="tg" id="tn" onclick="togN()"><div class="tg-b">&#x2713;</div><span>NPC market flow</span></div></div>
   <div class="sb-s"><div class="sb-l">Backtest</div><div class="bt-panel">
     <div class="bt-demo" onclick="useDemoTrader()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Use Demo Trader</div>
     <div class="bt-or">or upload your own</div>
-    <div class="bt-upload" onclick="document.getElementById('bfi').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg><span class="bt-fname" id="bt-fname">Select trader.py</span></div>
+    <label class="bt-upload" for="bfi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg><span class="bt-fname" id="bt-fname">Select trader.py</span></label>
     <input type="file" id="bfi" onchange="btSelFile(this.files[0])">
     <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px">Round 0 Data</div>
     <div class="pill-row" style="margin-bottom:4px">

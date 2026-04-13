@@ -50,6 +50,7 @@ function initRunData(data) {
 async function proc(file) {
   window.S.fn = file.name;
   document.getElementById('ld').classList.add('on');
+  await new Promise(r => setTimeout(r, 10));
   try {
     let content;
     if (file.name.endsWith('.zip')) {
