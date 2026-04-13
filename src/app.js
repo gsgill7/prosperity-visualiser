@@ -16,7 +16,7 @@ window.S = {
   btMerge: false,
 };
 
-const TABS = ['Time-Series', 'Flow Analysis', 'Seasonality', 'Volume Profile', 'Stochastic', 'Microstructure', 'Bot Patterns', 'Imbalance'];
+const TABS = ['Time-Series'];
 const PC = { displayModeBar: false };
 const ICO = {
   t: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
