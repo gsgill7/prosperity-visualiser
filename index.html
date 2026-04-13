@@ -142,7 +142,7 @@ button:focus-visible,input:focus-visible,.tab:focus-visible,.pill:focus-visible,
     <div class="pb-pct" id="ppct">100%</div>
   </div>
   <div class="ct" id="ct">
-    <div class="wl" id="wl"><h2>Upload a log file to begin</h2><p>Supports Prosperity ZIP, LOG, and JSON</p><button class="wl-cta" onclick="useDemoTrader();postBacktest()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Try Instant Demo</button><div class="wl-hint">Runs a sample backtest — no setup needed</div></div>
+    <div class="wl" id="wl"><h2>Upload a log file to begin</h2><p>Supports Prosperity ZIP, LOG, and JSON</p><button class="wl-cta" onclick="useDemoTrader().then(() => postBacktest())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Try Instant Demo</button><div class="wl-hint">Runs a sample backtest — no setup needed</div></div>
     <div id="da" style="display:none"><div class="met" id="met"></div><div class="tabs" id="tabs"></div><div id="pns"></div></div>
   </div>
 </div></div>
