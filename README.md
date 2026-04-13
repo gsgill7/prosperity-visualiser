@@ -19,7 +19,7 @@ Upload a backtest log to scrub through every tick and analyse market microstruct
 
 ## In-Browser Backtest
 
-The sidebar includes a one-click backtest runner. Clicking **Use Demo Trader** loads the bundled `demo_trader.py` market-making strategy, selects both Round 0 days, and enables PnL merging. Clicking **Run Backtest** sends the trader source to a Vercel Python serverless function (`api/backtest.py`), which:
+The sidebar includes a one-click backtest runner. Clicking **Use Demo Trader** loads the bundled `demo_trader.py` market-making strategy and selects both Round 0 days. Clicking **Run Backtest** sends the trader source to a Vercel Python serverless function (`api/backtest.py`), which:
 
 1. Writes the trader code to `/tmp` and imports the `Trader` class dynamically via `importlib`.
 2. Runs the backtester against bundled Round 0 market data CSVs using `FileSystemReader`.

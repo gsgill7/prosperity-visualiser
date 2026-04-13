@@ -13,7 +13,6 @@ window.S = {
   // Backtest panel state
   btFile: null,
   btDays: new Set(['0--1', '0--2']),
-  btMerge: false,
 };
 
 const TABS = ['Time-Series'];
@@ -265,14 +264,13 @@ async function useDemoTrader() {
     const text = await resp.text();
     const file = new File([text], 'demo_trader.py', { type: 'text/x-python' });
     btSelFile(file);
-    // Auto-select both days and enable merge for best demo experience
+    // Auto-select both days for best demo experience
     const S = window.S;
     S.btDays = new Set(['0--1', '0--2']);
     ['0--1', '0--2'].forEach(d => {
       const el = document.getElementById('btd-' + d);
       if (el) el.classList.add('on');
     });
-    if (!S.btMerge) btTogMerge();
   } catch (err) {
     alert('Failed to load demo trader: ' + err.message);
   }
@@ -289,11 +287,6 @@ function btTogDay(day) {
   if (S.btDays.has(day)) S.btDays.delete(day); else S.btDays.add(day);
   const el = document.getElementById('btd-' + day);
   if (el) el.classList.toggle('on', S.btDays.has(day));
-}
-
-function btTogMerge() {
-  window.S.btMerge = !window.S.btMerge;
-  document.getElementById('bt-merge').classList.toggle('on', window.S.btMerge);
 }
 
 async function postBacktest() {
@@ -314,7 +307,6 @@ async function postBacktest() {
       body: JSON.stringify({
         trader_code: code,
         days: [...S.btDays].sort(),
-        merge_pnl: S.btMerge,
       }),
     });
 
@@ -372,5 +364,4 @@ window.proc       = proc;
 window.useDemoTrader = useDemoTrader;
 window.btSelFile  = btSelFile;
 window.btTogDay   = btTogDay;
-window.btTogMerge = btTogMerge;
 window.postBacktest = postBacktest;
