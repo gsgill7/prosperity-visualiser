@@ -4,7 +4,7 @@ A tick-level L2 order book replay and analytics dashboard for the [IMC Prosperit
 
 Upload a backtest log to scrub through every tick and analyse market microstructure. Alternatively, submit a `Trader` class directly in the browser — the server runs the backtest against real competition data and loads the results into the visualizer without any local Python setup.
 
-**Live:** [prosperity-visualizer.vercel.app](https://prosperity-visualizer.vercel.app) — click **Use Demo Trader**, then **Run Backtest** to see the chart populated immediately.
+**Live:** [prosperity-visualizer.vercel.app]([https://prosperity-visualizer.vercel.app](https://prosperity-visualiser-public.vercel.app/)) — click **Use Demo Trader**, then **Run Backtest** to see the chart populated immediately.
 
 ---
 
