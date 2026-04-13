@@ -4,107 +4,6 @@
 window.parseFile  = parseFile;
 window.extractZip = extractZip;
 
-// ─── Hurst Exponent ───────────────────────────────────────────────────────────
-function stdPop(arr) {
-  const n = arr.length;
-  const m = arr.reduce((a, b) => a + b, 0) / n;
-  return Math.sqrt(arr.reduce((s, x) => s + (x - m) ** 2, 0) / n);
-}
-function polyfit1(xs, ys) {
-  const n = xs.length;
-  const sx = xs.reduce((a, b) => a + b, 0), sy = ys.reduce((a, b) => a + b, 0);
-  const sxy = xs.reduce((s, x, i) => s + x * ys[i], 0);
-  const sx2 = xs.reduce((s, x) => s + x * x, 0);
-  return (n * sxy - sx * sy) / (n * sx2 - sx * sx);
-}
-function computeHurst(mid) {
-  if (mid.length < 100) return null;
-  const a = mid;
-  const maxLag = Math.min(50, Math.floor(a.length / 10));
-  const lags = [];
-  for (let l = 2; l < maxLag; l++) lags.push(l);
-  if (lags.length < 3) return null;
-  const tau = lags.map(l => {
-    const diffs = [];
-    for (let i = 0; i < a.length - l; i++) diffs.push(a[i + l] - a[i]);
-    return Math.sqrt(stdPop(diffs));
-  });
-  const xs = lags.map(Math.log), ys = tau.map(Math.log);
-  return polyfit1(xs, ys) * 2.0;
-}
-
-// ─── Inline radix-2 FFT ───────────────────────────────────────────────────────
-function nextPow2(n) { let p = 1; while (p < n) p <<= 1; return p; }
-function fftInPlace(re, im) {
-  const N = re.length;
-  // Bit-reverse permutation
-  let j = 0;
-  for (let i = 1; i < N; i++) {
-    let bit = N >> 1;
-    for (; j & bit; bit >>= 1) j ^= bit;
-    j ^= bit;
-    if (i < j) {
-      [re[i], re[j]] = [re[j], re[i]];
-      [im[i], im[j]] = [im[j], im[i]];
-    }
-  }
-  // Butterfly stages
-  for (let len = 2; len <= N; len <<= 1) {
-    const ang = -2 * Math.PI / len;
-    const wRe = Math.cos(ang), wIm = Math.sin(ang);
-    for (let i = 0; i < N; i += len) {
-      let curRe = 1, curIm = 0;
-      for (let k = 0; k < len / 2; k++) {
-        const uRe = re[i + k], uIm = im[i + k];
-        const vRe = re[i + k + len / 2] * curRe - im[i + k + len / 2] * curIm;
-        const vIm = re[i + k + len / 2] * curIm + im[i + k + len / 2] * curRe;
-        re[i + k]             = uRe + vRe; im[i + k]             = uIm + vIm;
-        re[i + k + len / 2]   = uRe - vRe; im[i + k + len / 2]   = uIm - vIm;
-        const newRe = curRe * wRe - curIm * wIm;
-        curIm = curRe * wIm + curIm * wRe; curRe = newRe;
-      }
-    }
-  }
-}
-function computeFFT(mid) {
-  if (mid.length < 100) return null;
-  const n = mid.length;
-  const mean = mid.reduce((a, b) => a + b, 0) / n;
-  const centered = mid.map(x => x - mean);
-  const N = nextPow2(n);
-  const re = new Float64Array(N), im = new Float64Array(N);
-  centered.forEach((v, i) => { re[i] = v; });
-  fftInPlace(re, im);
-  const numBins = Math.floor(N / 2);
-  const amplitudes = [], periods = [];
-  for (let k = 1; k < numBins; k++) {
-    amplitudes.push(Math.sqrt(re[k] ** 2 + im[k] ** 2));
-    periods.push((n * 100) / k);
-  }
-  const maxIdx = amplitudes.indexOf(Math.max(...amplitudes));
-  return { periods, amplitudes, dominant_period: Math.round(periods[maxIdx]) };
-}
-function computeStochastic(mid) {
-  const r = { hurst: null, hurst_label: '', hurst_desc: '', log_returns: [], fft_periods: [], fft_amplitudes: [], dominant_period: null };
-  if (mid.length < 100) return r;
-  try {
-    const h = computeHurst(mid);
-    if (h !== null) {
-      r.hurst = Math.round(h * 10000) / 10000;
-      r.hurst_label = h < 0.45 ? 'Mean Reversion' : (h > 0.55 ? 'Trending' : 'Random Walk');
-      r.hurst_desc  = h < 0.45 ? 'Snaps to hidden mean. EMA/Z-score reversion.' : (h > 0.55 ? 'Directional momentum. Breakout strategies.' : 'Pure GBM. Market-make the spread.');
-    }
-    const pos = mid.filter(v => v > 0);
-    if (pos.length > 1) {
-      r.log_returns = [];
-      for (let i = 1; i < pos.length; i++) r.log_returns.push(Math.log(pos[i]) - Math.log(pos[i - 1]));
-    }
-    const fft = computeFFT(mid);
-    if (fft) { r.fft_periods = fft.periods; r.fft_amplitudes = fft.amplitudes; r.dominant_period = fft.dominant_period; }
-  } catch (e) { console.warn('Stochastic err:', e); }
-  return r;
-}
-
 // ─── Activities CSV ───────────────────────────────────────────────────────────
 function parseActivitiesCSV(text) {
   const entries = [];
@@ -375,7 +274,7 @@ function parseFile(content) {
     const lastAsks = d.l2_asks.length ? d.l2_asks[d.l2_asks.length - 1] : [];
 
     // Per-tick spreads, best bid/ask, OBI, tape velocity
-    const spreads = [], bbids = [], basks = [], obiArr = [], tapeArr = [];
+    const spreads = [], bbids = [], basks = [];
     const mktByTs = {};
     for (const mt of d.market_trades) { (mktByTs[mt[0]] = mktByTs[mt[0]] || []).push(mt); }
     for (let i = 0; i < d.timestamps.length; i++) {
@@ -413,11 +312,11 @@ function parseFile(content) {
     out[sym] = {
       timestamps: d.timestamps, mid_prices: d.mid_prices, signals: d.signals,
       buy_trades: d.buy_trades, sell_trades: d.sell_trades, market_trades: d.market_trades,
-      pnl: d.pnl, stochastic: computeStochastic(d.mid_prices),
+      pnl: d.pnl, 
       max_drawdown: Math.round(maxDd * 100) / 100,
       last_bids: lastBids.map(([p, v]) => [p, v]), last_asks: lastAsks.map(([p, v]) => [p, v]),
       spreads, best_bids: bbids, best_asks: basks, l2_bids: d.l2_bids, l2_asks: d.l2_asks,
-      obi: obiArr, tape_velocity: tapeArr,
+      
       submitted: d.submitted, total_submitted: totalSubmitted, total_filled: totalFilled,
       submitted_qty: submittedQty, filled_qty: filledQty,
       fill_rate: fillRateCount, fill_rate_count: fillRateCount, fill_rate_qty: fillRateQty,

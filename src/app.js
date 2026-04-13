@@ -237,15 +237,14 @@ function updateMet() {
 }
 
 // ─── Tab routing ─────────────────────────────────────────────────────────────
-function rTab(i) { [window.t0, window.t1, window.t2, window.t3, window.t4, window.t5, window.t6, window.t7][i](); }
+function rTab(i) { window.t0(); }
 
 // ─── Price chart view mode / overlays ────────────────────────────────────────
 function setCM(m) { window.S.cMode = m; window.t0(); }
 function togOv(k)  { window.S.ov[k] = !window.S.ov[k]; window.t0(); }
 function setWMD(v) {
   window.S.wallMidDist = window.S.wallMidDist === v ? null : v;
-  const i = window.S.tab;
-  if (i === 0) window.t0(); else if (i === 5) window.t5(); else if (i === 6) window.t6();
+  window.t0();
 }
 
 // ─── Keyboard shortcuts ───────────────────────────────────────────────────────
