@@ -139,7 +139,7 @@ function rMD(d) {
 function rStrat() {
   const rids = Object.keys(window.S.runs);
   if (rids.length < 2) return '';
-  let h = '<div class="strat"><div class="strat-h">Run Comparison<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>';
+  let h = '<div class="strat"><div class="strat-h">Run Comparison<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>`;
   rids.forEach((rid, i) => {
     const r = window.S.runs[rid], isCmp = window.S.comparing.has(rid);
     h += `<div class="strat-row"><div class="strat-dot" style="background:${RPAL[i % RPAL.length]}"></div><div class="strat-name">${r.name}</div><div class="strat-badge" onclick="togCmp('${rid}')" style="${isCmp ? '' : 'background:var(--bg3);color:var(--t1)'}">${isCmp ? 'Comparing' : 'Compare'}</div><span class="strat-x" onclick="delRun('${rid}')">&#x2715;</span></div>`;
@@ -274,21 +274,54 @@ function t0() {
     : '';
 
   const el = document.getElementById('p0');
-  el.innerHTML = `<div class="g2"><div class="g2l">
+
+  // To avoid destroying Plotly instances, we preserve the div if it exists
+  const hasPlotly = !!el.querySelector('#c0a');
+
+  const g2l_content = `
     <div class="card"><div class="card-h"><div class="card-t">Price &amp; Liquidity: ${S.prod}</div><div class="card-leg">${ov.ask || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--red)"></div>ASK</div>' : ''}${ov.mid ? '<div class="lg"><div class="lg-d" style="background:var(--t0)"></div>MID</div>' : ''}${ov.bid || m === 'prices' ? '<div class="lg"><div class="lg-d" style="background:var(--teal)"></div>BID</div>' : ''}</div></div><div class="pill-row"><span style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em">View</span><div class="pill ${m === 'prices' ? 'on' : ''}" onclick="setCM('prices')">Prices</div><div class="pill ${m === 'spread' ? 'on' : ''}" onclick="setCM('spread')">Spread</div><div class="pill ${m === 'volume' ? 'on' : ''}" onclick="setCM('volume')">Volume</div><div class="pill-sep"></div><span style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Overlays</span><div class="pill ${ov.bid ? 'on' : ''}" onclick="togOv('bid')">Bid</div><div class="pill ${ov.mid ? 'on' : ''}" onclick="togOv('mid')">Mid</div><div class="pill ${ov.ask ? 'on' : ''}" onclick="togOv('ask')">Ask</div><div class="pill ${ov.orders ? 'on' : ''}" onclick="togOv('orders')">Orders (All)</div>${d.signals && (d.signals.bb_mid || d.signals.bb_upper) ? `<div class="pill ${ov.bb ? 'on' : ''}" onclick="togOv('bb')">BB Bands</div>` : ''}${wmPills}</div><div id="c0a"></div></div>
     <div class="card"><div class="card-h"><div class="card-t">PnL Performance</div><div class="card-leg">${pnlTr.map(t => `<div class="lg"><div class="lg-d" style="background:${t.line.color}"></div>${t.name}</div>`).join('')}</div></div><div id="c0b"></div></div>
     ${d.spreads ? `<div class="card"><div class="card-h"><div class="card-t">Spread: ${S.prod}</div></div><div id="c0s"></div></div>` : ''}
     ${posArr.length ? `<div class="card"><div class="card-h"><div class="card-t">Position: ${S.prod}</div></div><div id="c0c"></div></div>` : ''}
     <div id="tk-cards-live">${rTkCards(d, tsVal)}</div>${exH}${logH}
-  </div><div class="g2r"><div class="ob"><div id="ob-live">${rOBi(snap[0], snap[1])}</div></div>${rStrat()}${rMP(d)}${rPS(d, S.tick)}${rCPnl(d)}${rMD(d)}</div></div>`;
+  `;
 
-  Plotly.newPlot('c0a', tr, BL(400, { hovermode: 'x unified', showlegend: true }), PC);
-  if (pnlTr.length) Plotly.newPlot('c0b', pnlTr, BL(200, { hovermode: 'x unified', showlegend: true }), PC);
+  const g2r_content = `<div class="ob"><div id="ob-live">${rOBi(snap[0], snap[1])}</div></div>${rStrat()}${rMP(d)}${rPS(d, S.tick)}${rCPnl(d)}${rMD(d)}`;
+
+  if (hasPlotly) {
+    // Only update inner controls if possible, actually we have to safely replace the plotly containers
+    // since we need Plotly.react to work, let's just replace the outer html but reparent the actual plotly DOM nodes.
+    const c0a_node = document.getElementById('c0a');
+    const c0b_node = document.getElementById('c0b');
+    const c0s_node = document.getElementById('c0s');
+    const c0c_node = document.getElementById('c0c');
+
+    el.innerHTML = `<div class="g2"><div class="g2l" id="g2l-container"></div><div class="g2r" id="g2r-container"></div></div>`;
+    document.getElementById('g2l-container').innerHTML = g2l_content;
+    document.getElementById('g2r-container').innerHTML = g2r_content;
+
+    if (c0a_node) document.getElementById('c0a').replaceWith(c0a_node);
+    if (c0b_node && document.getElementById('c0b')) document.getElementById('c0b').replaceWith(c0b_node);
+    if (c0s_node && document.getElementById('c0s')) document.getElementById('c0s').replaceWith(c0s_node);
+    if (c0c_node && document.getElementById('c0c')) document.getElementById('c0c').replaceWith(c0c_node);
+  } else {
+    el.innerHTML = `<div class="g2"><div class="g2l">${g2l_content}</div><div class="g2r">${g2r_content}</div></div>`;
+  }
+
+  const callPlotly = hasPlotly ? Plotly.react : Plotly.newPlot;
+  callPlotly('c0a', tr, BL(400, { hovermode: 'x unified', showlegend: true }), PC);
+
+  if (pnlTr.length) {
+      if (!hasPlotly && !document.getElementById('c0b')) {} // safeguard
+      else callPlotly('c0b', pnlTr, BL(200, { hovermode: 'x unified', showlegend: true }), PC);
+  }
   if (d.spreads) {
     const spV = d.spreads.filter(s => s != null);
-    if (spV.length) Plotly.newPlot('c0s', [{ x: d.timestamps, y: d.spreads, name: 'Spread', type: 'scatter', mode: 'lines', line: { color: C.gold, width: 1 }, fill: 'tozeroy', fillcolor: 'rgba(245,158,11,0.06)' }], BL(120, { hovermode: 'x unified', margin: { l: 50, r: 16, t: 4, b: 24 } }), PC);
+    if (spV.length && document.getElementById('c0s')) {
+        callPlotly('c0s', [{ x: d.timestamps, y: d.spreads, name: 'Spread', type: 'scatter', mode: 'lines', line: { color: C.gold, width: 1 }, fill: 'tozeroy', fillcolor: 'rgba(245,158,11,0.06)' }], BL(120, { hovermode: 'x unified', margin: { l: 50, r: 16, t: 4, b: 24 } }), PC);
+    }
   }
-  if (posArr.length) Plotly.newPlot('c0c', [{ x: posArr.map(p => p[0]), y: posArr.map(p => p[1]), name: 'Position', type: 'scatter', mode: 'lines', line: { color: C.blue, width: 1.5 } }], BL(160, { hovermode: 'x unified' }), PC);
+  if (posArr.length && document.getElementById('c0c')) callPlotly('c0c', [{ x: posArr.map(p => p[0]), y: posArr.map(p => p[1]), name: 'Position', type: 'scatter', mode: 'lines', line: { color: C.blue, width: 1.5 } }], BL(160, { hovermode: 'x unified' }), PC);
 }
 
 // Expose for app.js and inline onclick handlers

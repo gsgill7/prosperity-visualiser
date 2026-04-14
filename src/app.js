@@ -190,7 +190,12 @@ function stopPlay() {
 function stepF() { stopPlay(); window.S.tick = Math.min(window.S.tick + 1, window.S.maxTick); document.getElementById('psl').value = window.S.tick; updateTick(); }
 function stepB() { stopPlay(); window.S.tick = Math.max(window.S.tick - 1, 0);               document.getElementById('psl').value = window.S.tick; updateTick(); }
 function setSpd(s) { window.S.speed = s; document.querySelectorAll('.pb-spd').forEach(el => el.classList.toggle('on', +el.dataset.s === s)); }
-function onScrub(v) { stopPlay(); window.S.tick = +v; updateTick(); }
+function onScrub(v) {
+  stopPlay();
+  window.S.tick = +v;
+  if (window.S._scrubTick) cancelAnimationFrame(window.S._scrubTick);
+  window.S._scrubTick = requestAnimationFrame(() => updateTick());
+}
 function onTsInp(v) {
   const d = window.S.data[window.S.prod], ts = d.timestamps, val = +v;
   let best = 0; for (let i = 0; i < ts.length; i++) { if (ts[i] <= val) best = i; else break; }
