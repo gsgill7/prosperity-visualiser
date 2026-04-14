@@ -110,6 +110,45 @@ Upload a backtest log to scrub through every tick and analyse market microstruct
 
 ---
 
+## 🚀 Quickstart: Custom Logger & Chart Signals
+
+To get the visualizer to show all its features—overlaying your exact buy/sell orders, plotting your position, and drawing custom signal lines like fair value or EMAs—you must use a specific `Logger` class.
+
+**1. Copy the `Logger` class** from [`example_trader.py`](./example_trader.py) into your own `trader.py` file.
+**2. Call `logger.flush()`** at the very end of your `Trader.run()` method.
+**3. (Optional) Log custom signals** by printing `SIG|PRODUCT|key=value` strings. The visualizer will automatically graph these values as lines on your candlestick chart!
+
+```python
+from datamodel import *
+import json
+from typing import Any
+
+# Copy the entire Logger class from example_trader.py here...
+class Logger:
+    # ...
+    pass
+
+logger = Logger()
+
+class Trader:
+    def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:
+        orders = {}
+        conversions = 0
+        trader_data = state.traderData
+        
+        # ... YOUR TRADING LOGIC HERE ...
+        
+        # Log custom signals to draw on the chart (e.g., fair value, EMA)
+        logger.print(f"SIG|AMETHYSTS|fair_value=10000|ema=9998.5")
+        
+        # Flush at the end of every tick to serialize the state
+        logger.flush(state, orders, conversions, trader_data)
+        
+        return orders, conversions, trader_data
+```
+
+---
+
 ## Analysis Tabs
 
 | Tab | Description |
@@ -139,29 +178,14 @@ Only Round 0 data is bundled on the server. For later rounds, run the backtester
 ```bash
 pip install -e backtester/
 
-# Backtest on Round 0, days -1 and -2, with merged PnL
-prosperity4bt demo_trader.py 0--1 0--2 --merge-pnl --out my_run.log
+# Backtest on Round 0, days -1 and -2
+prosperity4bt demo_trader.py 0--1 0--2 --out my_run.log
 
 # Open the visualizer and drag my_run.log onto the page
 python -m http.server 8000
 ```
 
-### Logger
-
-To populate own-trade overlays, position tracking, and sandbox logs in the visualizer, call `logger.flush()` at the end of every `Trader.run()` invocation:
-
-```python
-from demo_trader import Logger
-
-logger = Logger()
-
-class Trader:
-    def run(self, state: TradingState):
-        orders = {}
-        # ... strategy logic ...
-        logger.flush(state, orders, conversions=0, trader_data="")
-        return orders, 0, ""
-```
+---
 
 ## Architecture
 
@@ -170,10 +194,7 @@ index.html          Static HTML/CSS shell — no framework, no build step
 src/parser.js       All parsing and analytics, running client-side:
                       parseBT()        — backtester .log (three-section format)
                       parseLambdaLog() — submission JSON / lambda log arrays
-                      computeHurst()   — Rescaled Range via log-log polyfit
-                      computeFFT()     — radix-2 Cooley-Tukey in-place DFT
-                      OBI and tape velocity from L2 order depth snapshots
-src/charts.js       Plotly.js renderers for all eight tabs
+src/charts.js       Plotly.js renderers for all tabs
 src/app.js          Application state, file handling, playback controls,
                       tab routing, and postBacktest() fetch/parse pipeline
 api/backtest.py     Vercel Python serverless function — runs Trader class

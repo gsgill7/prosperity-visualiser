@@ -157,7 +157,7 @@ function t0() {
   const fSell = wmFilter(d.sell_trades,   d, S.wallMidDist);
 
   if (m === 'prices') {
-    tr.push({ x: ts, y: mp, name: 'Mid', type: 'scatter', mode: 'lines', line: { color: '#8b8fa3', width: 1.5 } });
+    tr.push({ x: ts, y: mp, name: 'Mid', type: 'scattergl', mode: 'lines', line: { color: '#8b8fa3', width: 1.5 } });
 
     if (S.npc && d.market_trades.length) {
       const mts = wmFilter(d.market_trades, d, S.wallMidDist);
@@ -165,8 +165,8 @@ function t0() {
       d.timestamps.forEach((t, i) => { midLk[t] = d.mid_prices[i]; });
       const nB = [], nS = [];
       mts.forEach(t => { const mid = midLk[t[0]]; if (mid != null && t[1] >= mid) nB.push(t); else nS.push(t); });
-      if (nB.length) tr.push({ x: nB.map(t => t[0]), y: nB.map(t => t[1]), type: 'scatter', mode: 'markers', name: 'NPC Buy',  marker: { size: nB.map(t => Math.max(3, Math.min(8, t[2]))), color: 'rgba(34,197,94,0.4)',  symbol: 'triangle-up'   }, hoverinfo: 'skip' });
-      if (nS.length) tr.push({ x: nS.map(t => t[0]), y: nS.map(t => t[1]), type: 'scatter', mode: 'markers', name: 'NPC Sell', marker: { size: nS.map(t => Math.max(3, Math.min(8, t[2]))), color: 'rgba(239,68,68,0.4)', symbol: 'triangle-down'  }, hoverinfo: 'skip' });
+      if (nB.length) tr.push({ x: nB.map(t => t[0]), y: nB.map(t => t[1]), type: 'scattergl', mode: 'markers', name: 'NPC Buy',  marker: { size: nB.map(t => Math.max(3, Math.min(8, t[2]))), color: 'rgba(34,197,94,0.4)',  symbol: 'triangle-up'   }, hoverinfo: 'skip' });
+      if (nS.length) tr.push({ x: nS.map(t => t[0]), y: nS.map(t => t[1]), type: 'scattergl', mode: 'markers', name: 'NPC Sell', marker: { size: nS.map(t => Math.max(3, Math.min(8, t[2]))), color: 'rgba(239,68,68,0.4)', symbol: 'triangle-down'  }, hoverinfo: 'skip' });
     }
 
     // Signal overlays (wall_mid, bid_wall, ask_wall, fair_value, ema)
@@ -182,17 +182,17 @@ function t0() {
         if (!d.signals[k]) return;
         if (k === 'bid_wall' && !ov.bid) return;
         if (k === 'ask_wall' && !ov.ask) return;
-        tr.push({ x: d.signals[k].map(p => p[0]), y: d.signals[k].map(p => p[1]), name: k, type: 'scatter', mode: 'lines', line: sty[k] || { color: C.dim, width: 1 } });
+        tr.push({ x: d.signals[k].map(p => p[0]), y: d.signals[k].map(p => p[1]), name: k, type: 'scattergl', mode: 'lines', line: sty[k] || { color: C.dim, width: 1 } });
       });
 
       // Bollinger Band overlay — gated behind BB Bands toggle
       if (ov.bb) {
         if (d.signals.bb_lower && d.signals.bb_upper) {
-          tr.push({ x: d.signals.bb_lower.map(p => p[0]), y: d.signals.bb_lower.map(p => p[1]), name: 'BB Lower', type: 'scatter', mode: 'lines', line: { color: 'rgba(168,85,247,0.85)', width: 1.5 }, showlegend: false, hoverinfo: 'skip' });
-          tr.push({ x: d.signals.bb_upper.map(p => p[0]), y: d.signals.bb_upper.map(p => p[1]), name: 'BB Band',  type: 'scatter', mode: 'lines', line: { color: 'rgba(168,85,247,0.85)', width: 1.5 }, fill: 'tonexty', fillcolor: 'rgba(168,85,247,0.15)' });
+          tr.push({ x: d.signals.bb_lower.map(p => p[0]), y: d.signals.bb_lower.map(p => p[1]), name: 'BB Lower', type: 'scattergl', mode: 'lines', line: { color: 'rgba(168,85,247,0.85)', width: 1.5 }, showlegend: false, hoverinfo: 'skip' });
+          tr.push({ x: d.signals.bb_upper.map(p => p[0]), y: d.signals.bb_upper.map(p => p[1]), name: 'BB Band',  type: 'scattergl', mode: 'lines', line: { color: 'rgba(168,85,247,0.85)', width: 1.5 }, fill: 'tonexty', fillcolor: 'rgba(168,85,247,0.15)' });
         }
         if (d.signals.bb_mid) {
-          tr.push({ x: d.signals.bb_mid.map(p => p[0]), y: d.signals.bb_mid.map(p => p[1]), name: 'BB Mid', type: 'scatter', mode: 'lines', line: { color: C.purple, width: 2, dash: 'dot' } });
+          tr.push({ x: d.signals.bb_mid.map(p => p[0]), y: d.signals.bb_mid.map(p => p[1]), name: 'BB Mid', type: 'scattergl', mode: 'lines', line: { color: C.purple, width: 2, dash: 'dot' } });
         }
       }
     }
@@ -204,12 +204,12 @@ function t0() {
     const bCP = {};
     fBuy.forEach(t => { (bCP[t[3]] = bCP[t[3]] || []).push(t); });
     Object.entries(bCP).forEach(([cp, td]) => {
-      tr.push({ x: td.map(t => t[0]), y: td.map(t => t[1]), name: 'Buy \u2190 ' + cp, type: 'scatter', mode: 'markers', marker: { color: cpC[cp] || C.green, symbol: 'triangle-up',   size: 7 } });
+      tr.push({ x: td.map(t => t[0]), y: td.map(t => t[1]), name: 'Buy \u2190 ' + cp, type: 'scattergl', mode: 'markers', marker: { color: cpC[cp] || C.green, symbol: 'triangle-up',   size: 7 } });
     });
     const sCP = {};
     fSell.forEach(t => { (sCP[t[3]] = sCP[t[3]] || []).push(t); });
     Object.entries(sCP).forEach(([cp, td]) => {
-      tr.push({ x: td.map(t => t[0]), y: td.map(t => t[1]), name: 'Sell \u2192 ' + cp, type: 'scatter', mode: 'markers', marker: { color: cpC[cp] || C.red,   symbol: 'triangle-down', size: 7 } });
+      tr.push({ x: td.map(t => t[0]), y: td.map(t => t[1]), name: 'Sell \u2192 ' + cp, type: 'scattergl', mode: 'markers', marker: { color: cpC[cp] || C.red,   symbol: 'triangle-down', size: 7 } });
     });
 
     if (ov.orders && d.sub_by_ts) {
@@ -221,12 +221,12 @@ function t0() {
           else          subS.push({ x: time, y: o[1], vol: Math.abs(o[2]) });
         });
       });
-      if (subB.length) tr.push({ x: subB.map(o => o.x), y: subB.map(o => o.y), name: 'Submitted Buy',  type: 'scatter', mode: 'markers', marker: { color: 'rgba(34,197,94,0.18)',  symbol: 'circle-open', size: 9, line: { width: 2, color: C.green } }, text: subB.map(o => `Sub Buy Vol: ${o.vol}`),  hovertemplate: '%{text}<br>Price: %{y}<extra></extra>' });
-      if (subS.length) tr.push({ x: subS.map(o => o.x), y: subS.map(o => o.y), name: 'Submitted Sell', type: 'scatter', mode: 'markers', marker: { color: 'rgba(239,68,68,0.18)', symbol: 'circle-open', size: 9, line: { width: 2, color: C.red   } }, text: subS.map(o => `Sub Sell Vol: ${o.vol}`), hovertemplate: '%{text}<br>Price: %{y}<extra></extra>' });
+      if (subB.length) tr.push({ x: subB.map(o => o.x), y: subB.map(o => o.y), name: 'Submitted Buy',  type: 'scattergl', mode: 'markers', marker: { color: 'rgba(34,197,94,0.18)',  symbol: 'circle-open', size: 9, line: { width: 2, color: C.green } }, text: subB.map(o => `Sub Buy Vol: ${o.vol}`),  hovertemplate: '%{text}<br>Price: %{y}<extra></extra>' });
+      if (subS.length) tr.push({ x: subS.map(o => o.x), y: subS.map(o => o.y), name: 'Submitted Sell', type: 'scattergl', mode: 'markers', marker: { color: 'rgba(239,68,68,0.18)', symbol: 'circle-open', size: 9, line: { width: 2, color: C.red   } }, text: subS.map(o => `Sub Sell Vol: ${o.vol}`), hovertemplate: '%{text}<br>Price: %{y}<extra></extra>' });
     }
 
   } else if (m === 'spread') {
-    tr.push({ x: ts, y: d.spreads, name: 'Spread', type: 'scatter', mode: 'lines', line: { color: C.gold, width: 1.5 } });
+    tr.push({ x: ts, y: d.spreads, name: 'Spread', type: 'scattergl', mode: 'lines', line: { color: C.gold, width: 1.5 } });
   } else if (m === 'volume') {
     const mt = d.market_trades, vB = {};
     mt.forEach(t => { const b = Math.round(t[0] / 1000) * 1000; vB[b] = (vB[b] || 0) + t[2]; });
@@ -234,9 +234,9 @@ function t0() {
     tr.push({ x: bx, y: bx.map(k => vB[k]), name: 'Volume', type: 'bar', marker: { color: C.teal, opacity: 0.8 } });
   }
 
-  if (ov.bid) tr.push({ x: ts, y: d.best_bids, name: 'Bid', type: 'scatter', mode: 'lines', line: { color: C.teal, width: 1.5 } });
-  if (ov.mid) tr.push({ x: ts, y: mp,          name: 'Mid', type: 'scatter', mode: 'lines', line: { color: C.white, width: 2 } });
-  if (ov.ask) tr.push({ x: ts, y: d.best_asks, name: 'Ask', type: 'scatter', mode: 'lines', line: { color: C.red, width: 1.5 } });
+  if (ov.bid) tr.push({ x: ts, y: d.best_bids, name: 'Bid', type: 'scattergl', mode: 'lines', line: { color: C.teal, width: 1.5 } });
+  if (ov.mid) tr.push({ x: ts, y: mp,          name: 'Mid', type: 'scattergl', mode: 'lines', line: { color: C.white, width: 2 } });
+  if (ov.ask) tr.push({ x: ts, y: d.best_asks, name: 'Ask', type: 'scattergl', mode: 'lines', line: { color: C.red, width: 1.5 } });
 
   const pnlTr = [];
   [...S.comparing].forEach((rid, i) => {
@@ -246,11 +246,11 @@ function t0() {
     if (!rpnl.length) return;
     const col = RPAL[Object.keys(S.runs).indexOf(rid) % RPAL.length];
     const isActive = rid === S.activeRun;
-    pnlTr.push({ x: rpnl.map(p => p[0]), y: rpnl.map(p => p[1]), name: rd.name, type: 'scatter', mode: 'lines', line: { color: col, width: isActive ? 2 : 1.5, dash: isActive ? 'solid' : 'dot' }, fill: isActive ? 'tozeroy' : undefined, fillcolor: isActive ? 'rgba(34,197,94,0.04)' : undefined });
+    pnlTr.push({ x: rpnl.map(p => p[0]), y: rpnl.map(p => p[1]), name: rd.name, type: 'scattergl', mode: 'lines', line: { color: col, width: isActive ? 2 : 1.5, dash: isActive ? 'solid' : 'dot' }, fill: isActive ? 'tozeroy' : undefined, fillcolor: isActive ? 'rgba(34,197,94,0.04)' : undefined });
   });
   if (!pnlTr.length && d.pnl.length) {
     const l = d.pnl[d.pnl.length - 1][1], f = d.pnl[0][1];
-    pnlTr.push({ x: d.pnl.map(p => p[0]), y: d.pnl.map(p => p[1]), name: S.prod, type: 'scatter', fill: 'tozeroy', fillcolor: l >= f ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)', line: { color: l >= f ? C.green : C.red, width: 1.5 } });
+    pnlTr.push({ x: d.pnl.map(p => p[0]), y: d.pnl.map(p => p[1]), name: S.prod, type: 'scattergl', fill: 'tozeroy', fillcolor: l >= f ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)', line: { color: l >= f ? C.green : C.red, width: 1.5 } });
   }
 
   const posArr = (d.signals && d.signals.position) || [];
@@ -318,10 +318,10 @@ function t0() {
   if (d.spreads) {
     const spV = d.spreads.filter(s => s != null);
     if (spV.length && document.getElementById('c0s')) {
-        callPlotly('c0s', [{ x: d.timestamps, y: d.spreads, name: 'Spread', type: 'scatter', mode: 'lines', line: { color: C.gold, width: 1 }, fill: 'tozeroy', fillcolor: 'rgba(245,158,11,0.06)' }], BL(120, { hovermode: 'x unified', margin: { l: 50, r: 16, t: 4, b: 24 } }), PC);
+        callPlotly('c0s', [{ x: d.timestamps, y: d.spreads, name: 'Spread', type: 'scattergl', mode: 'lines', line: { color: C.gold, width: 1 }, fill: 'tozeroy', fillcolor: 'rgba(245,158,11,0.06)' }], BL(120, { hovermode: 'x unified', margin: { l: 50, r: 16, t: 4, b: 24 } }), PC);
     }
   }
-  if (posArr.length && document.getElementById('c0c')) callPlotly('c0c', [{ x: posArr.map(p => p[0]), y: posArr.map(p => p[1]), name: 'Position', type: 'scatter', mode: 'lines', line: { color: C.blue, width: 1.5 } }], BL(160, { hovermode: 'x unified' }), PC);
+  if (posArr.length && document.getElementById('c0c')) callPlotly('c0c', [{ x: posArr.map(p => p[0]), y: posArr.map(p => p[1]), name: 'Position', type: 'scattergl', mode: 'lines', line: { color: C.blue, width: 1.5 } }], BL(160, { hovermode: 'x unified' }), PC);
 }
 
 // Expose for app.js and inline onclick handlers

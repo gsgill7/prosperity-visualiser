@@ -46,6 +46,22 @@ function initRunData(data) {
   }
 }
 
+async function parseWithWorker(content) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker('src/worker.js');
+    worker.onmessage = (e) => {
+      if (e.data.success) resolve(e.data.data);
+      else reject(new Error(e.data.error));
+      worker.terminate();
+    };
+    worker.onerror = (err) => {
+      reject(err);
+      worker.terminate();
+    };
+    worker.postMessage(content);
+  });
+}
+
 async function proc(file) {
   window.S.fn = file.name;
   document.getElementById('ld').classList.add('on');
@@ -58,7 +74,7 @@ async function proc(file) {
     } else {
       content = await file.text();
     }
-    const data = window.parseFile(content);
+    const data = await parseWithWorker(content);
     const runId = String(++window.S._runCounter);
     const name  = file.name.replace(/\.(zip|log|json)$/, '');
     initRunData(data);
@@ -233,12 +249,31 @@ function updateMet() {
   if (pnl.length && tk < pnl.length) dp = pnl[tk][1] - (pnl[0] ? pnl[0][1] : 0);
   const lm = tk < d.mid_prices.length ? d.mid_prices[tk] : 0;
   const dps = dp >= 0;
-  document.getElementById('met').innerHTML =
-    `<div class="mc"><div class="mc-i">${ICO.t}</div><div class="mc-l">Total PnL</div><div class="mc-v ${dps ? 'g' : 'r'}">${dps ? '+' : ''}${fmt(Math.round(dp))}</div><div class="mc-sub">Cumulative</div></div>` +
-    `<div class="mc"><div class="mc-i">${ICO.d}</div><div class="mc-l">Max Drawdown</div><div class="mc-v r">${fmt(Math.round(d.max_drawdown))}</div><div class="mc-sub">Peak-to-Trough</div></div>` +
-    `<div class="mc"><div class="mc-i">${ICO.b}</div><div class="mc-l">${S.prod} PnL</div><div class="mc-v ${dps ? 'g' : 'r'}">${dps ? '+' : ''}${fmt(Math.round(dp))}</div><div class="mc-sub">By Product</div></div>` +
-    `<div class="mc"><div class="mc-i">${ICO.p}</div><div class="mc-l">Trades</div><div class="mc-v">${d.buy_trades.length + d.sell_trades.length}</div><div class="mc-sub">Total Fills</div></div>` +
-    `<div class="mc"><div class="mc-i">${ICO.$}</div><div class="mc-l">Mid Price</div><div class="mc-v">${lm.toFixed(2)}</div><div class="mc-sub">Current</div></div>`;
+
+  const container = document.getElementById('met');
+  const hasNodes = !!document.getElementById('metric-pnl');
+
+  if (!hasNodes || container.dataset.prod !== S.prod) {
+    container.dataset.prod = S.prod;
+    container.innerHTML =
+      `<div class="mc"><div class="mc-i">${ICO.t}</div><div class="mc-l">Total PnL</div><div class="mc-v ${dps ? 'g' : 'r'}" id="metric-pnl">${dps ? '+' : ''}${fmt(Math.round(dp))}</div><div class="mc-sub">Cumulative</div></div>` +
+      `<div class="mc"><div class="mc-i">${ICO.d}</div><div class="mc-l">Max Drawdown</div><div class="mc-v r" id="metric-dd">${fmt(Math.round(d.max_drawdown))}</div><div class="mc-sub">Peak-to-Trough</div></div>` +
+      `<div class="mc"><div class="mc-i">${ICO.b}</div><div class="mc-l">${S.prod} PnL</div><div class="mc-v ${dps ? 'g' : 'r'}" id="metric-prod-pnl">${dps ? '+' : ''}${fmt(Math.round(dp))}</div><div class="mc-sub">By Product</div></div>` +
+      `<div class="mc"><div class="mc-i">${ICO.p}</div><div class="mc-l">Trades</div><div class="mc-v" id="metric-trades">${d.buy_trades.length + d.sell_trades.length}</div><div class="mc-sub">Total Fills</div></div>` +
+      `<div class="mc"><div class="mc-i">${ICO.$}</div><div class="mc-l">Mid Price</div><div class="mc-v" id="metric-mid">${lm.toFixed(2)}</div><div class="mc-sub">Current</div></div>`;
+  } else {
+    const pnlEl = document.getElementById('metric-pnl');
+    pnlEl.textContent = `${dps ? '+' : ''}${fmt(Math.round(dp))}`;
+    pnlEl.className = `mc-v ${dps ? 'g' : 'r'}`;
+
+    const prodPnlEl = document.getElementById('metric-prod-pnl');
+    prodPnlEl.textContent = `${dps ? '+' : ''}${fmt(Math.round(dp))}`;
+    prodPnlEl.className = `mc-v ${dps ? 'g' : 'r'}`;
+
+    document.getElementById('metric-dd').textContent = fmt(Math.round(d.max_drawdown));
+    document.getElementById('metric-trades').textContent = String(d.buy_trades.length + d.sell_trades.length);
+    document.getElementById('metric-mid').textContent = lm.toFixed(2);
+  }
 }
 
 // ─── Tab routing ─────────────────────────────────────────────────────────────
@@ -327,7 +362,7 @@ async function postBacktest() {
     }
 
     const logText = await resp.text();
-    const data = window.parseFile(logText);
+    const data = await parseWithWorker(logText);
     const runId = String(++S._runCounter);
     const name  = S.btFile.name.replace(/\.py$/i, '') + ' [bt]';
     initRunData(data);

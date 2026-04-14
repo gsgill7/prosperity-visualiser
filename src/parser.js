@@ -1,8 +1,9 @@
 // parser.js — Client-side log parsing + analytics
 // Supports: Prosperity ZIP, backtest .log, submission .json
 
-window.parseFile  = parseFile;
-window.extractZip = extractZip;
+const globalScope = typeof self !== 'undefined' ? self : window;
+globalScope.parseFile  = parseFile;
+globalScope.extractZip = extractZip;
 
 // ─── Activities CSV ───────────────────────────────────────────────────────────
 function parseActivitiesCSV(text) {
